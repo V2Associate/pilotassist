@@ -1,12 +1,12 @@
 body {
   background-color: rgb(233, 235, 238);
-  font-family: SF Optimized, system-ui, -apple-system, BlinkMacSystemFont,
+  /* font-family: SF Optimized, system-ui, -apple-system, BlinkMacSystemFont,
     ".SFNSText-Regular", sans-serif;
   letter-spacing: -0.01em;
-  margin-bottom: 50px;
+  margin-bottom: 50px; */
   /* font-size: 16px; */
 }
-.header-nav-items {
+/* .header-nav-items {
   cursor: pointer;
   padding: 0 16px;
 }
@@ -15,13 +15,18 @@ body {
 }
 .header-nav-items a:hover {
   text-decoration: underline;
-}
+} */
 /* overriding mui-container padding */
-
-.mui-container {
+/* .appbar-nav-items {
+  flex: 1;
+} */
+.appbar-container {
+  width: 100%;
+}
+/* .mui-container {
   padding-left: 0px;
   padding-right: 0px;
-}
+} */
 #trip-container {
   /* border: 1px solid black; */
   background-color: #fff;
