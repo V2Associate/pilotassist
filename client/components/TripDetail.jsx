@@ -14,10 +14,6 @@ type State = {};
 class TripDetail extends React.Component<Props, State> {
   state = {};
 
-  // onEditPressed = event => {
-  //   console.log("Edit pressed", event);
-  //   this.props.history.push("/newtripdetail");
-  // };
   render() {
     return (
       <div id="trip-container">
