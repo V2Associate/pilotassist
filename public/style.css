@@ -59,14 +59,14 @@ body {
   display: flex;
 }
 
-.edit-icon {
+/* .edit-icon {
   position: relative;
   right: 10px;
 }
 .delete-icon {
   left: 10px;
   position: relative;
-}
+} */
 
 .plane-icon {
   transform: rotate(45deg);
@@ -90,7 +90,7 @@ body {
   background-color: rgb(59, 89, 152);
 } */
 
-footer {
+/* footer {
   background: white;
   bottom: 0px;
   -webkit-box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
@@ -100,13 +100,13 @@ footer {
   display: flex;
   flex-direction: row;
   height: 50px;
-  justify-content: space-between;
+  justify-content: space-around;
   left: 0px;
   margin-bottom: 0px;
   padding: 5px 5px 0 5px;
   position: fixed;
   right: 0px;
-}
+} */
 
 /* .trip-date {
   font-size: 2rem;

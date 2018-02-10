@@ -69,7 +69,7 @@ class Roster extends React.Component<Props, State> {
           onClick={this.onAddPressed}
         >
           <AddIcon />
-        </Button>{" "}
+        </Button>
         <AppFooter onAddPressed={this.onAddPressed} />
       </div>
     );

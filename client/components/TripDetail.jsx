@@ -1,9 +1,11 @@
 // @flow
 
 import React from "react";
-import MdAirplanemodeActive from "react-icons/lib/md/airplanemode-active";
-import MdDelete from "react-icons/lib/md/delete";
-import MdEdit from "react-icons/lib/md/edit";
+
+import IconButton from "material-ui/IconButton";
+import DeleteIcon from "material-ui-icons/Delete";
+import CreateIcon from "material-ui-icons/Create";
+import FlightIcon from "material-ui-icons/Flight";
 
 type Props = {
   onDeletePressed: Function,
@@ -19,18 +21,24 @@ class TripDetail extends React.Component<Props, State> {
       <div id="trip-container">
         <div className="trip-container-row-1">
           <div className="plane-number">
-            <MdAirplanemodeActive className="plane-icon" size={32} />
+            <FlightIcon className="plane-icon" />
             AI 777
           </div>
           <div className="action-icons">
-            <div className="edit-icon" onClick={this.props.onEditPressed}>
-              <MdEdit size={16} />
-              <span className="action-name">Edit</span>
-            </div>
-            <div className="delete-icon" onClick={this.props.onDeletePressed}>
+            <IconButton aria-label="Create" onClick={this.props.onEditPressed}>
+              <CreateIcon />
+            </IconButton>
+
+            <IconButton
+              aria-label="Delete"
+              onClick={this.props.onDeletePressed}
+            >
+              <DeleteIcon />
+            </IconButton>
+            {/* <div className="delete-icon" onClick={this.props.onDeletePressed}>
               <MdDelete size={16} />
               <span className="action-name">Delete</span>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="trip-container-row-2">
