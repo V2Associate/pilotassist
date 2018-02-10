@@ -23,7 +23,6 @@
   "homepage": "https://github.com/nsaboo/pilotassist#readme",
   "dependencies": {
     "material-ui": "^1.0.0-beta.32",
-    "muicss": "^0.9.35",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-icons": "^2.2.7",

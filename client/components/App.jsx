@@ -1,7 +1,6 @@
 // @flow
 import React from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
-import Container from "muicss/lib/react/container";
 import Reboot from "material-ui/Reboot";
 import AppHeader from "./AppHeader";
 import Roster from "./Roster";
@@ -13,13 +12,11 @@ const App = () => (
     <div>
       <Reboot />
       <AppHeader />
-      <Container>
-        <Switch>
-          <Route path="/roster" component={Roster} />
-          <Route exact path="/leavesummary" component={LeaveSummary} />
-          <Route path="/newtripdetail" component={NewTripDetail} />
-        </Switch>
-      </Container>
+      <Switch>
+        <Route path="/roster" component={Roster} />
+        <Route exact path="/leavesummary" component={LeaveSummary} />
+        <Route path="/newtripdetail" component={NewTripDetail} />
+      </Switch>
     </div>
   </BrowserRouter>
 );
