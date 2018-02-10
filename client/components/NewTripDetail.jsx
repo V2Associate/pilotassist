@@ -87,11 +87,11 @@ class NewTripDetails extends React.Component<Props, State> {
   };
   save = event => {
     console.log(event.target);
-    this.setState({ goback: false });
+    this.setState({ goback: true });
   };
   render() {
     if (this.state.goback === true) {
-      return <Redirect to="/router" />;
+      return <Redirect to="/roster" />;
     }
     const { classes } = this.props;
     return (

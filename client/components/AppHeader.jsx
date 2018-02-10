@@ -2,6 +2,7 @@
 
 import React from "react";
 import { withStyles } from "material-ui/styles";
+import { Link } from "react-router-dom";
 import Toolbar from "material-ui/Toolbar";
 import Typography from "material-ui/Typography";
 import AppBar from "material-ui/AppBar";
@@ -35,10 +36,10 @@ const AppHeader = (props: Props) => {
             gutterBottom
             className={classes.flex}
           >
-            <Button color="inherit" href="/roster">
+            <Button color="inherit" component={Link} to="/roster">
               Roster
             </Button>
-            <Button color="inherit" href="/leavesummary">
+            <Button color="inherit" component={Link} to="/leavesummary">
               Leave Summary
             </Button>
           </Typography>
