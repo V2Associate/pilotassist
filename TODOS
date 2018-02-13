@@ -1,23 +1,14 @@
-Write the CSS Loader for webpack -- I don't think it's needed now
-Can the index.html be inside 
-
-find a repo
-
-Add date
-Add Total hours flew in the footer, that should contains daily, monthly, yearly
 Logo
-Below each icon put the purpose of it
-Can I have different colors for the flight icon
-
 10-Feb
 
 Treeshaking
 
 Issues: 
 
-The app with the current design doesn't sell the name. See Quora design where AppShell has only the name and action Icons
+- The app with the current design doesn't sell the name. See Quora design where AppShell has only the name and action Icons
 Below that is a tab
-
+- Need to add the meta tag (refer PWA course) for full screen
+- Fields validation for the NewTripDetail page
 
 Doubts:
 
