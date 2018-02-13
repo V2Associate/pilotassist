@@ -27,7 +27,7 @@ body {
   padding-left: 0px;
   padding-right: 0px;
 } */
-#trip-container {
+.trip-container {
   /* border: 1px solid black; */
   background-color: #fff;
   box-sizing: border-box;

@@ -1,7 +1,7 @@
 {
 
-    "trips":[{
-        "1518460200":[
+    "trips":{
+        "1518546600":[
         {
             "flightNumber": "AI-777",
             "departure": "BLR",
@@ -33,5 +33,5 @@
             "arrivalTime":1518584400
         }
     ]
-    }]
+    }
 }

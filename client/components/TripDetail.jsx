@@ -11,8 +11,16 @@ import type { Trip } from "../../flow-typed/types";
 
 type Props = {
   tripDetail: Trip,
-  onDeletePressed: Function,
-  onEditPressed: Function
+  date: number,
+  onDeletePressed: (
+    event: SyntheticEvent<HTMLDivElement>,
+    date: number,
+    flightNumber: string
+  ) => void,
+  onEditPressed: (
+    event: SyntheticEvent<HTMLDivElement>,
+    tripDetail: Trip
+  ) => void
 };
 type State = {};
 
@@ -28,20 +36,36 @@ class TripDetail extends React.Component<Props, State> {
       arrivalTime
     } = this.props.tripDetail;
     return (
-      <div id="trip-container">
+      <div
+        className="trip-container"
+        id={`trip-container-${this.props.date}-${
+          this.props.tripDetail.flightNumber
+        }`}
+      >
         <div className="trip-container-row-1">
           <div className="plane-number">
             <FlightIcon className="plane-icon" />
             {flightNumber}
           </div>
           <div className="action-icons">
-            <IconButton aria-label="Create" onClick={this.props.onEditPressed}>
+            <IconButton
+              aria-label="Create"
+              onClick={event =>
+                this.props.onEditPressed(event, this.props.tripDetail)
+              }
+            >
               <CreateIcon />
             </IconButton>
 
             <IconButton
               aria-label="Delete"
-              onClick={this.props.onDeletePressed}
+              onClick={event =>
+                this.props.onDeletePressed(
+                  event,
+                  this.props.date,
+                  this.props.tripDetail.flightNumber
+                )
+              }
             >
               <DeleteIcon />
             </IconButton>

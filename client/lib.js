@@ -64,3 +64,22 @@ export function todayTimeInEpoch(): number {
     1000
   );
 }
+
+export function convertToEpoch(
+  year: number,
+  month: number,
+  date: number,
+  hours: number,
+  minutes: number
+): number {
+  const today = new Date();
+  return (
+    new Date(
+      year < 0 ? today.getFullYear() : year,
+      month < 0 ? today.getMonth() : month,
+      date < 0 ? today.getDate() : date,
+      hours < 0 ? today.getHours() : hours,
+      minutes < 0 ? today.getMinutes() : minutes
+    ).getTime() / 1000
+  );
+}
