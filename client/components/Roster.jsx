@@ -5,27 +5,14 @@ import { Redirect } from "react-router-dom";
 import { withStyles } from "material-ui/styles";
 import Button from "material-ui/Button";
 import AddIcon from "material-ui-icons/Add";
+import type { Match } from "react-router-dom";
 import TripDetail from "./TripDetail";
 import TripDate from "./TripDate";
 import AppFooter from "./AppFooter";
 import preload from "../data/roster.json";
-import { todayTimeInEpoch } from "../lib";
-import type { Trip } from "../../flow-typed/types";
+import { todayTimeInEpoch, getDateFromUnixTimeStamp } from "../lib";
+import type { Trip, RosterType } from "../../flow-typed/types";
 
-type Props = {
-  classes: {
-    fab: {}
-  }
-};
-type State = {
-  roster: {
-    trips: {
-      [date: string]: Array<Trip>
-    }
-  },
-  showNewTripDetails: boolean,
-  tripDetail: Trip | null
-};
 const styles = theme => ({
   fab: {
     position: "fixed",
@@ -34,7 +21,29 @@ const styles = theme => ({
   }
 });
 
+type Props = {
+  classes: {
+    fab: {}
+  },
+  location: Match
+};
+type State = {
+  roster: RosterType,
+  showNewTripDetails: boolean,
+  tripDetail: Trip | null
+};
+
 class Roster extends React.Component<Props, State> {
+  constructor(props) {
+    super(props);
+    console.log("in constructure");
+    if ("location" in this.props && "newTripDetail" in this.props.location) {
+      const { newTripDetail } = this.props.location;
+      console.log(newTripDetail);
+      const date = getDateFromUnixTimeStamp(newTripDetail.departureTime);
+      this.state.roster.trips[date.toString()].push(newTripDetail);
+    }
+  }
   state = {
     roster: preload,
     showNewTripDetails: false,
@@ -44,25 +53,41 @@ class Roster extends React.Component<Props, State> {
   onDeletePressed = (
     event: SyntheticEvent<HTMLDivElement>,
     date: number,
-    flightNumber: string
-  ) => {
+    tripDetail: Trip
+  ): void => {
+    const roster = this.deleteTrip(date, tripDetail.flightNumber);
+    this.setState({ roster });
+  };
+  onAddPressed = (event: SyntheticEvent<HTMLDivElement>) => {
+    console.log(event.currentTarget);
+    this.setState({ showNewTripDetails: true, tripDetail: null });
+  };
+  onEditPressed = (
+    event: SyntheticEvent<HTMLDivElement>,
+    date: number,
+    tripDetail: Trip
+  ): void => {
+    console.log(event.currentTarget);
+    const roster = this.deleteTrip(date, tripDetail.flightNumber);
+    this.setState({ showNewTripDetails: true, tripDetail, roster });
+    // this.context.history.push("/newtripdetail");
+    // withRouter(({ history }) => history.push("/newtripdetail"));
+  };
+
+  deleteTrip = (date: number, flightNumber: string): RosterType => {
+    console.log(flightNumber, date);
     const tempRoster = this.state.roster;
     const key = date.toString();
     tempRoster.trips[key] = tempRoster.trips[key].filter(
       detail => detail.flightNumber !== flightNumber
     );
-    this.setState({ roster: tempRoster });
+    return tempRoster;
   };
-  onAddPressed = (event: SyntheticEvent<HTMLDivElement>) => {
-    console.log(event.currentTarget);
-  };
-  onEditPressed = (event: SyntheticEvent<HTMLDivElement>, tripDetail: Trip) => {
-    console.log(event.currentTarget);
-    this.setState({ showNewTripDetails: true, tripDetail });
-    // this.context.history.push("/newtripdetail");
-    // withRouter(({ history }) => history.push("/newtripdetail"));
-  };
+
   render() {
+    const { classes } = this.props;
+    const today = todayTimeInEpoch();
+
     if (this.state.showNewTripDetails === true) {
       return (
         <Redirect
@@ -73,20 +98,20 @@ class Roster extends React.Component<Props, State> {
         />
       );
     }
-    const { classes } = this.props;
-    const today = todayTimeInEpoch();
     return (
       <div>
         <TripDate date={today} />
-        {this.state.roster.trips[today.toString()].map(trip => (
-          <TripDetail
-            key={`${today}-${trip.departure}-${trip.arrival}`}
-            tripDetail={trip}
-            date={today}
-            onDeletePressed={this.onDeletePressed}
-            onEditPressed={this.onEditPressed}
-          />
-        ))}
+        {this.state.roster.trips[today.toString()]
+          .sort((a, b) => a.arrivalTime - b.arrivalTime)
+          .map(trip => (
+            <TripDetail
+              key={`${today}-${trip.departure}-${trip.arrival}`}
+              tripDetail={trip}
+              date={today}
+              onDeletePressed={this.onDeletePressed}
+              onEditPressed={this.onEditPressed}
+            />
+          ))}
         <Button
           variant="fab"
           mini

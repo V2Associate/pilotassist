@@ -42,12 +42,15 @@ export function formatDate(unixtimestamp: number): string {
   )}-${date.getFullYear()} ${days[date.getDay()]}`;
 }
 
+/*
+* first param - second param
+*/
 export function timeDifference(
-  unixtimestamp1: number,
-  unixtimestamp2: number
+  latertUnixtimestamp: number,
+  olderUnixtimestamp: number
 ): string {
   let difference =
-    new Date(unixtimestamp1 * 1000) - new Date(unixtimestamp2 * 1000);
+    new Date(latertUnixtimestamp * 1000) - new Date(olderUnixtimestamp * 1000);
   const hh = Math.floor(difference / 1000 / 60 / 60);
   difference -= hh * 1000 * 60 * 60;
   const mm = Math.floor(difference / 1000 / 60);
@@ -57,12 +60,15 @@ export function timeDifference(
   return `${hh}hrs ${mm}min`;
 }
 
-export function todayTimeInEpoch(): number {
-  const today = new Date();
+export function dateInEpoch(date: Date): number {
   return (
-    new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() /
+    new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() /
     1000
   );
+}
+
+export function todayTimeInEpoch(): number {
+  return dateInEpoch(new Date());
 }
 
 export function convertToEpoch(
@@ -82,4 +88,8 @@ export function convertToEpoch(
       minutes < 0 ? today.getMinutes() : minutes
     ).getTime() / 1000
   );
+}
+
+export function getDateFromUnixTimeStamp(unixtimestamp: number) {
+  return dateInEpoch(new Date(unixtimestamp * 1000));
 }

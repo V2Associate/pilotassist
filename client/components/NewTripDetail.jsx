@@ -81,9 +81,16 @@ class NewTripDetails extends React.Component<Props, State> {
     goback: false,
     newTripDetail: null
   };
-  componentDidMount = () => {
-    if ("location" in this.props && "tripDetail" in this.props.location) {
-      console.log(this.props.location.tripDetail.flightNumber);
+  componentWillMount() {
+    this.initializeUI();
+  }
+  initializeUI = (): void => {
+    if (
+      "location" in this.props &&
+      "tripDetail" in this.props.location &&
+      this.props.location.tripDetail !== null
+    ) {
+      // console.log(this.props.location.tripDetail.flightNumber);
       this.setState(prevState => ({
         tripDetail: {
           ...prevState.tripDetail,
@@ -107,47 +114,53 @@ class NewTripDetails extends React.Component<Props, State> {
       }));
     }
   };
+
   handleChange = event => {
+    const { value } = event.currentTarget;
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
-        flightNumber: event.currentTarget.value
+        flightNumber: value
       }
     }));
     // TODO: On change we need to set the src and default time
   };
   handleSrcChange = event => {
+    const { value } = event.currentTarget;
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
-        departure: event.currentTarget.value
+        departure: value
       }
     }));
   };
   handleDstChange = event => {
+    const { value } = event.currentTarget;
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
-        arrival: event.currentTarget.value
+        arrival: value
       }
     }));
   };
   handleSrcTimeChange = event => {
-    const [hours, minutes] = event.currentTarget.value.split(":");
+    const { value } = event.currentTarget;
+    const [hours, minutes] = value.split(":");
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
-        departureTime: event.currentTarget.value,
+        departureTime: value,
         departureUnixTime: convertToEpoch(-1, -1, -1, hours, minutes)
       }
     }));
   };
   handleDstTimeChange = event => {
-    const [hours, minutes] = event.currentTarget.value.split(":");
+    const { value } = event.currentTarget;
+    const [hours, minutes] = value.split(":");
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
-        arrivalTime: event.currentTarget.value,
+        arrivalTime: value,
         arrivalUnixTime: convertToEpoch(-1, -1, -1, hours, minutes)
       }
     }));
@@ -169,8 +182,7 @@ class NewTripDetails extends React.Component<Props, State> {
         <Redirect
           to={{
             pathname: "/roster",
-            tripDetail: this.state.newTripDetail,
-            isNew: false
+            newTripDetail: this.state.newTripDetail
           }}
         />
       );
@@ -197,17 +209,19 @@ class NewTripDetails extends React.Component<Props, State> {
           <FormHelperText>Choose flight</FormHelperText>
           <div className={classes.root}>
             <TextField
+              required
+              label="From"
               id="flight-src"
               className={(classes.textField, classes.margin)}
-              helperText="From"
               margin="normal"
               value={this.state.tripDetail.departure}
-              onChange={this.handleSrcChange}
+              onChange={e => this.handleSrcChange(e)}
             />
             <TextField
+              required
+              label="Started At (24Hrs)"
               id="flight-src-time"
               className={(classes.textField, classes.margin)}
-              helperText="Started At (24Hrs)"
               margin="normal"
               value={this.state.tripDetail.departureTime}
               onChange={this.handleSrcTimeChange}
@@ -215,17 +229,19 @@ class NewTripDetails extends React.Component<Props, State> {
           </div>
           <div className={classes.root}>
             <TextField
+              label="To"
+              required
               id="flight-dst"
               className={(classes.textField, classes.margin)}
-              helperText="To"
               margin="normal"
               value={this.state.tripDetail.arrival}
               onChange={this.handleDstChange}
             />
             <TextField
+              required
+              label="Landed At (24Hrs)"
               id="flight-dst-time"
               className={(classes.textField, classes.margin)}
-              helperText="Landed At (24Hrs)"
               margin="normal"
               value={this.state.tripDetail.arrivalTime}
               onChange={this.handleDstTimeChange}

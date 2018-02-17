@@ -1,20 +1,20 @@
 {
 
     "trips":{
-        "1518546600":[
+        "1518719400":[
         {
             "flightNumber": "AI-777",
             "departure": "BLR",
-            "departureTime": 1518429600,
+            "departureTime": 1518726600,
             "arrival": "CCU",
-            "arrivalTime":1518435000
+            "arrivalTime":1518733800
         },
         {
             "flightNumber": "AI-778",
             "departure": "CCU",
-            "departureTime": 1518435000,
+            "departureTime": 1518741000,
             "arrival": "BLR",
-            "arrivalTime":1518448800
+            "arrivalTime":1518748200
         }
     ],
     "1518566400":[

@@ -15,10 +15,11 @@ type Props = {
   onDeletePressed: (
     event: SyntheticEvent<HTMLDivElement>,
     date: number,
-    flightNumber: string
+    tripDetail: Trip
   ) => void,
   onEditPressed: (
     event: SyntheticEvent<HTMLDivElement>,
+    date: number,
     tripDetail: Trip
   ) => void
 };
@@ -51,7 +52,11 @@ class TripDetail extends React.Component<Props, State> {
             <IconButton
               aria-label="Create"
               onClick={event =>
-                this.props.onEditPressed(event, this.props.tripDetail)
+                this.props.onEditPressed(
+                  event,
+                  this.props.date,
+                  this.props.tripDetail
+                )
               }
             >
               <CreateIcon />
@@ -63,7 +68,7 @@ class TripDetail extends React.Component<Props, State> {
                 this.props.onDeletePressed(
                   event,
                   this.props.date,
-                  this.props.tripDetail.flightNumber
+                  this.props.tripDetail
                 )
               }
             >

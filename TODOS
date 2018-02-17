@@ -10,7 +10,25 @@ Below that is a tab
 - Need to add the meta tag (refer PWA course) for full screen
 - Fields validation for the NewTripDetail page
 - If there is nothing rostered then show empty div
+- validation
+
 Doubts:
 
 - Have used position: relative extensively with px any issues that we need to forsee due to that
 - Why the scroll bar appears
+
+
+Veda Review
+
+- Remark
+- 24 hrs no colon
+- Registration of the flight
+- Everything should be in Caps
+-Display of 24 hrs also should be without :
+- From to started at and landed at this is the order
+- Validation for overlapping timing
+- Red color delete
+- Footer was not visible
+- co-pilot name
+- Night flight  different color
+- There could be flights going over the night 

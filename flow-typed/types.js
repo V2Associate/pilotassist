@@ -7,3 +7,10 @@ export type Trip = {
   arrival: string,
   arrivalTime: number
 };
+
+// I can't think of a better name now ;)
+export type RosterType = {
+  trips: {
+    [date: string]: Array<Trip>
+  }
+};
