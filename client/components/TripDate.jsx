@@ -23,7 +23,7 @@ const styles = theme => ({
     display: "flex",
     "flex-direction": "row",
     "flex-wrap": "nowrap",
-    "justify-content": "center"
+    "justify-content": "space-between"
   },
   date: {
     "padding-top": theme.spacing.unit * 1
