@@ -20,7 +20,7 @@ const styles = theme => ({
     bottom: theme.spacing.unit * 10,
     right: theme.spacing.unit * 2
   },
-  nodetails: {
+  noDetails: {
     display: "flex",
     "justify-content": "center",
     "flex-direction": "column",
@@ -31,15 +31,18 @@ const styles = theme => ({
 type Props = {
   classes: {
     fab: {},
-    nodetails: {}
+    noDetails: {}
   },
   location: Match
 };
 type State = {
   roster: RosterType,
   showNewTripDetails: boolean,
-  tripDetail: Trip | null
+  tripDetail: Trip | null,
+  today: number
 };
+
+const SEC_PER_DAY = 24 * 60 * 60;
 
 class Roster extends React.Component<Props, State> {
   constructor(props) {
@@ -55,9 +58,17 @@ class Roster extends React.Component<Props, State> {
   state = {
     roster: preload,
     showNewTripDetails: false,
-    tripDetail: null
+    tripDetail: null,
+    today: todayTimeInEpoch()
   };
-
+  onPreviousPressed = () => {
+    console.log("Previous pressed");
+    this.setState({ today: this.state.today - SEC_PER_DAY });
+  };
+  onNextPressed = () => {
+    console.log("Next pressed");
+    this.setState({ today: this.state.today + SEC_PER_DAY });
+  };
   onDeletePressed = (
     event: SyntheticEvent<HTMLDivElement>,
     date: number,
@@ -94,7 +105,6 @@ class Roster extends React.Component<Props, State> {
 
   render() {
     const { classes } = this.props;
-    const today = todayTimeInEpoch();
 
     if (this.state.showNewTripDetails === true) {
       return (
@@ -108,15 +118,19 @@ class Roster extends React.Component<Props, State> {
     }
     return (
       <div>
-        <TripDate date={today} />
-        {today.toString() in this.state.roster.trips ? (
-          this.state.roster.trips[today.toString()]
+        <TripDate
+          date={this.state.today}
+          onPreviousPressed={this.onPreviousPressed}
+          onNextPressed={this.onNextPressed}
+        />
+        {this.state.today.toString() in this.state.roster.trips ? (
+          this.state.roster.trips[this.state.today.toString()]
             .sort((a, b) => a.arrivalTime - b.arrivalTime)
             .map(trip => (
               <TripDetail
-                key={`${today}-${trip.departure}-${trip.arrival}`}
+                key={`${this.state.today}-${trip.departure}-${trip.arrival}`}
                 tripDetail={trip}
-                date={today}
+                date={this.state.today}
                 onDeletePressed={this.onDeletePressed}
                 onEditPressed={this.onEditPressed}
               />
@@ -125,7 +139,7 @@ class Roster extends React.Component<Props, State> {
           <Typography
             variant="display2"
             align="center"
-            className={classes.nodetails}
+            className={classes.noDetails}
             gutterBottom
           >
             No rostered flight
