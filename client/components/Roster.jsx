@@ -5,6 +5,7 @@ import { Redirect } from "react-router-dom";
 import { withStyles } from "material-ui/styles";
 import Button from "material-ui/Button";
 import AddIcon from "material-ui-icons/Add";
+import Typography from "material-ui/Typography";
 import type { Match } from "react-router-dom";
 import TripDetail from "./TripDetail";
 import TripDate from "./TripDate";
@@ -18,12 +19,19 @@ const styles = theme => ({
     position: "fixed",
     bottom: theme.spacing.unit * 10,
     right: theme.spacing.unit * 2
+  },
+  nodetails: {
+    display: "flex",
+    "justify-content": "center",
+    "flex-direction": "column",
+    height: "400px"
   }
 });
 
 type Props = {
   classes: {
-    fab: {}
+    fab: {},
+    nodetails: {}
   },
   location: Match
 };
@@ -101,17 +109,28 @@ class Roster extends React.Component<Props, State> {
     return (
       <div>
         <TripDate date={today} />
-        {this.state.roster.trips[today.toString()]
-          .sort((a, b) => a.arrivalTime - b.arrivalTime)
-          .map(trip => (
-            <TripDetail
-              key={`${today}-${trip.departure}-${trip.arrival}`}
-              tripDetail={trip}
-              date={today}
-              onDeletePressed={this.onDeletePressed}
-              onEditPressed={this.onEditPressed}
-            />
-          ))}
+        {today.toString() in this.state.roster.trips ? (
+          this.state.roster.trips[today.toString()]
+            .sort((a, b) => a.arrivalTime - b.arrivalTime)
+            .map(trip => (
+              <TripDetail
+                key={`${today}-${trip.departure}-${trip.arrival}`}
+                tripDetail={trip}
+                date={today}
+                onDeletePressed={this.onDeletePressed}
+                onEditPressed={this.onEditPressed}
+              />
+            ))
+        ) : (
+          <Typography
+            variant="display2"
+            align="center"
+            className={classes.nodetails}
+            gutterBottom
+          >
+            No rostered flight
+          </Typography>
+        )}
         <Button
           variant="fab"
           mini
