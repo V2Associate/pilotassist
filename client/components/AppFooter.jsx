@@ -5,12 +5,12 @@ import { withStyles } from "material-ui/styles";
 
 const styles = {
   footer: {
-    background: "white",
+    background: "#3f51b5",
     bottom: "0px",
     "-webkit-box-shadow": "0 -1px 3px rgba(0, 0, 0, 0.2)",
     "box-shadow": "0 -1px 3px rgba(0, 0, 0, 0.2)",
     "box-sizing": "border-box",
-    color: "#7a7a7a",
+    color: "white",
     display: "flex",
     "flex-direction": "row",
     height: "50px",
