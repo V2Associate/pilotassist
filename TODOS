@@ -16,6 +16,14 @@ Doubts:
 - Have used position: relative extensively with px any issues that we need to forsee due to that
 - Why the scroll bar appears
 
+server side tasks:
+
+ Need to create a mysql user for accessing pilotassist
+ Create proper index for the tables
+ Add a column to trip_details to see whether it's Automatic or manual addition
+ Change DOB to Date instead of unixtimestamp
+   - Need to have a cleaner way to start the server, might be through yarn
+
 
 Veda Review ( Feb - 16th)
 
@@ -31,3 +39,10 @@ Veda Review ( Feb - 16th)
 - co-pilot name
 - Night flight  different color
 - There could be flights going over the night 
+
+
+server todo:
+
+ - Auto reloading is not working
+ - Do we need to write setup.py if so purpose of it
+ - Check the TODO within code

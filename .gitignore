@@ -63,4 +63,5 @@ node_modules
 *~
 *.pyc
 .vscode
+build
 
