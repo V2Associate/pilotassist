@@ -7,6 +7,7 @@ import simplejson
 from flask import Blueprint, request
 from server.db import DB
 from server.common import Roster
+from flask import Response
 
 
 ROSTER = Blueprint('roster', __name__)
@@ -28,7 +29,7 @@ def roster_details(member_id):
     result = _db.get_roster_details(
         member_id, start_time=start_time, end_time=end_time)
     output = simplejson.dumps(Roster.serialize(result))
-    return output
+    return Response(output, mimetype="application/json")
 
 
 @ROSTER.route("/<int:memberid>", methods=['POST'])
