@@ -1,16 +1,15 @@
 from json import JSONEncoder
 from collections import defaultdict
 import datetime
-import time
+import calendar
 
 # TODO check is this the right place for get_date method
-# TODO this won't work if the local box is not in UTC, due to time.mktime
 
 
 def get_date_as_timestamp(timestamp):
     given_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
-    return int(time.mktime(datetime.datetime(given_timestamp.year,
-                                             given_timestamp.month, given_timestamp.day, 0, 0).utctimetuple()))
+    return int(calendar.timegm(datetime.datetime(given_timestamp.year,
+                                                 given_timestamp.month, given_timestamp.day, 0, 0).utctimetuple()))
 
 
 class Trip:

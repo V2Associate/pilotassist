@@ -22,7 +22,7 @@ server side tasks:
  Create proper index for the tables
  Add a column to trip_details to see whether it's Automatic or manual addition
  Change DOB to Date instead of unixtimestamp
-   - Need to have a cleaner way to start the server, might be through yarn
+ Need to have a cleaner way to start the server, might be through yarn
 
 
 Veda Review ( Feb - 16th)
@@ -46,3 +46,6 @@ server todo:
  - Auto reloading is not working
  - Do we need to write setup.py if so purpose of it
  - Check the TODO within code
+
+
+
