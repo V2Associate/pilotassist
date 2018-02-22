@@ -10,7 +10,8 @@ import type { Match } from "react-router-dom";
 import TripDetail from "./TripDetail";
 import TripDate from "./TripDate";
 import AppFooter from "./AppFooter";
-import preload from "../data/roster.json";
+// import preload from "../data/roster.json";
+import { getRosterQueryURL, status, json } from "../data/api";
 import { todayTimeInEpoch, getDateFromUnixTimeStamp } from "../lib";
 import type { Trip, RosterType } from "../../flow-typed/types";
 
@@ -39,7 +40,9 @@ type State = {
   roster: RosterType,
   showNewTripDetails: boolean,
   tripDetail: Trip | null,
-  today: number
+  today: number,
+  // TODO use this state to show some spinner
+  loading: boolean
 };
 
 const SEC_PER_DAY = 24 * 60 * 60;
@@ -52,15 +55,32 @@ class Roster extends React.Component<Props, State> {
       const { newTripDetail } = this.props.location;
       console.log(newTripDetail);
       const date = getDateFromUnixTimeStamp(newTripDetail.departureTime);
-      this.state.roster.trips[date.toString()].push(newTripDetail);
+      this.state.roster.trips[date].push(newTripDetail);
     }
   }
   state = {
-    roster: preload,
+    roster: { trips: {} },
     showNewTripDetails: false,
     tripDetail: null,
-    today: todayTimeInEpoch()
+    today: todayTimeInEpoch(),
+    loading: true
   };
+  componentDidMount() {
+    if (this.state.loading) {
+      console.log("In componentDidMount");
+      const url = getRosterQueryURL(1);
+      fetch(url)
+        .then(status)
+        .then(json)
+        .then(data => this.setState({ roster: data }))
+        .catch(error => console.log("Request failed", error));
+      // eslint-disable-next-line react/no-did-mount-set-state
+      this.setState({ loading: false });
+    }
+  }
+  componentDidUpdate() {
+    console.log("In componentDidUpdate");
+  }
   onPreviousPressed = () => {
     console.log("Previous pressed");
     this.setState({ today: this.state.today - SEC_PER_DAY });
@@ -96,7 +116,7 @@ class Roster extends React.Component<Props, State> {
   deleteTrip = (date: number, flightNumber: string): RosterType => {
     console.log(flightNumber, date);
     const tempRoster = this.state.roster;
-    const key = date.toString();
+    const key = date;
     tempRoster.trips[key] = tempRoster.trips[key].filter(
       detail => detail.flightNumber !== flightNumber
     );
@@ -123,12 +143,12 @@ class Roster extends React.Component<Props, State> {
           onPreviousPressed={this.onPreviousPressed}
           onNextPressed={this.onNextPressed}
         />
-        {this.state.today.toString() in this.state.roster.trips ? (
-          this.state.roster.trips[this.state.today.toString()]
+        {this.state.today in this.state.roster.trips ? (
+          this.state.roster.trips[this.state.today]
             .sort((a, b) => a.arrivalTime - b.arrivalTime)
             .map(trip => (
               <TripDetail
-                key={`${this.state.today}-${trip.departure}-${trip.arrival}`}
+                key={`${trip.departureTime}-${trip.departure}-${trip.arrival}`}
                 tripDetail={trip}
                 date={this.state.today}
                 onDeletePressed={this.onDeletePressed}

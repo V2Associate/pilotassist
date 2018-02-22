@@ -61,9 +61,11 @@ export function timeDifference(
 }
 
 export function dateInEpoch(date: Date): number {
+  // All the timestamps for dates should be in unixtimestamp
   return (
-    new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() /
-    1000
+    new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    ).getTime() / 1000
   );
 }
 

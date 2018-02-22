@@ -64,4 +64,5 @@ node_modules
 *.pyc
 .vscode
 build
+pilotassist.egg-info
 
