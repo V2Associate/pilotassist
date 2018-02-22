@@ -4,16 +4,16 @@ All functionalities that are related to Roster entity
 """
 from __future__ import absolute_import
 import simplejson
-from flask import Blueprint, request
+from flask import Blueprint, request, Response
 from server.db import DB
 from server.common import Roster
-from flask import Response
-
+from server.api.cross_domain import crossdomain
 
 ROSTER = Blueprint('roster', __name__)
 
 
 @ROSTER.route("/<int:member_id>", methods=['GET'])
+@crossdomain(origin='http://localhost:5000')
 def roster_details(member_id):
     """Get the roster details for a particular member
 
