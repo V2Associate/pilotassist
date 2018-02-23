@@ -1,5 +1,7 @@
 // @flow
 
+import type { RosterType } from "../flow-typed/types";
+
 const days = [
   "Sunday",
   "Monday",
@@ -94,4 +96,23 @@ export function convertToEpoch(
 
 export function getDateFromUnixTimeStamp(unixtimestamp: number) {
   return dateInEpoch(new Date(unixtimestamp * 1000));
+}
+
+export function mergeRosterUpdate(
+  currentData: RosterType,
+  updateData: RosterType
+): RosterType {
+  const roster = currentData;
+  Object.keys(updateData.trips).forEach(timestamp => {
+    // if (timestamp in roster.trips) {
+    //   // this will come when we query for more than 1 day and there is a overlap
+    //   console.log("Me updating...");
+    //   roster.trips[timestamp].push(updateData.trips[timestamp]);
+    // } else {
+    // always doing the update assuming that DB will be latest
+    console.log("Me adding new...");
+    roster.trips[timestamp] = updateData.trips[timestamp];
+    // }
+  });
+  return roster;
 }

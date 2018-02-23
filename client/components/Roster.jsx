@@ -18,7 +18,11 @@ import {
   json,
   showError
 } from "../data/api";
-import { todayTimeInEpoch, getDateFromUnixTimeStamp } from "../lib";
+import {
+  todayTimeInEpoch,
+  getDateFromUnixTimeStamp,
+  mergeRosterUpdate
+} from "../lib";
 import type { Trip, RosterType } from "../../flow-typed/types";
 
 const styles = theme => ({
@@ -87,13 +91,38 @@ class Roster extends React.Component<Props, State> {
   componentDidUpdate() {
     console.log("In componentDidUpdate");
   }
+
+  onNavigation = day => {
+    if (day in this.state.roster.trips) {
+      this.setState({ today: day });
+    } else {
+      const url =
+        day < this.state.today
+          ? getRosterQueryURL(1, day, this.state.today)
+          : getRosterQueryURL(1, this.state.today, day);
+
+      fetch(url)
+        .then(status)
+        .then(json)
+        .then(data => {
+          // merge data and roter, data can have new keys or updates to old keys. Trips keys
+          // will always present, only time key can be/cannot be present
+          const roster = mergeRosterUpdate(this.state.roster, data);
+          this.setState({ roster, today: day });
+        })
+        .catch(error => console.log("Request failed", error));
+    }
+  };
   onPreviousPressed = () => {
     console.log("Previous pressed");
-    this.setState({ today: this.state.today - SEC_PER_DAY });
+    const previousDay = this.state.today - SEC_PER_DAY;
+    this.onNavigation(previousDay);
   };
   onNextPressed = () => {
     console.log("Next pressed");
-    this.setState({ today: this.state.today + SEC_PER_DAY });
+    // this.setState({ today: this.state.today + SEC_PER_DAY });
+    const nextDay = this.state.today + SEC_PER_DAY;
+    this.onNavigation(nextDay);
   };
   onDeletePressed = (
     event: SyntheticEvent<HTMLDivElement>,
@@ -165,7 +194,8 @@ class Roster extends React.Component<Props, State> {
           onPreviousPressed={this.onPreviousPressed}
           onNextPressed={this.onNextPressed}
         />
-        {this.state.today in this.state.roster.trips ? (
+        {this.state.today in this.state.roster.trips &&
+        this.state.roster.trips[this.state.today].length > 0 ? (
           this.state.roster.trips[this.state.today]
             .sort((a, b) => a.arrivalTime - b.arrivalTime)
             .map(trip => (

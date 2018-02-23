@@ -1,5 +1,5 @@
 // @flow
-const baseUrl = "http://localhost:6001/roster";
+const baseUrl = "http://192.168.1.2:6001/roster";
 
 export function status(response: Response): Promise<Response> {
   if (response.status >= 200 && response.status < 300) {
@@ -28,7 +28,11 @@ export function getRosterQueryURL(
     url = `${url}?start_time=${startTime}`;
   }
   if (endTime) {
-    url = `${url}?start_time=${endTime}`;
+    if (startTime) {
+      url = `${url}&end_time=${endTime}`;
+    } else {
+      url = `${url}?end_time=${endTime}`;
+    }
   }
   console.log(`formed url = ${url}`);
   return url;
