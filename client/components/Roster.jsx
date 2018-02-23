@@ -11,7 +11,13 @@ import TripDetail from "./TripDetail";
 import TripDate from "./TripDate";
 import AppFooter from "./AppFooter";
 // import preload from "../data/roster.json";
-import { getRosterQueryURL, status, json } from "../data/api";
+import {
+  getRosterQueryURL,
+  getRosterDeleteURL,
+  status,
+  json,
+  showError
+} from "../data/api";
 import { todayTimeInEpoch, getDateFromUnixTimeStamp } from "../lib";
 import type { Trip, RosterType } from "../../flow-typed/types";
 
@@ -94,8 +100,9 @@ class Roster extends React.Component<Props, State> {
     date: number,
     tripDetail: Trip
   ): void => {
-    const roster = this.deleteTrip(date, tripDetail.flightNumber);
-    this.setState({ roster });
+    this.deleteTrip(date, tripDetail.flightNumber).then(roster =>
+      this.setState({ roster })
+    );
   };
   onAddPressed = (event: SyntheticEvent<HTMLDivElement>) => {
     console.log(event.currentTarget);
@@ -113,14 +120,29 @@ class Roster extends React.Component<Props, State> {
     // withRouter(({ history }) => history.push("/newtripdetail"));
   };
 
-  deleteTrip = (date: number, flightNumber: string): RosterType => {
+  deleteTrip = (date: number, flightNumber: string): Promise<RosterType> => {
     console.log(flightNumber, date);
-    const tempRoster = this.state.roster;
-    const key = date;
-    tempRoster.trips[key] = tempRoster.trips[key].filter(
-      detail => detail.flightNumber !== flightNumber
-    );
-    return tempRoster;
+    // TODO need to get the memeber id
+    return fetch(getRosterDeleteURL(1), {
+      method: "DELETE",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ flight_number: flightNumber, date })
+    })
+      .then(status)
+      .then(() => {
+        // TODO :- Check this. Assuming that delete is taking some long time for some reason
+        // User does a edit, he edits and saves before the edit is completed
+        // possibly the edited one also will get delete :( )
+        const tempRoster = this.state.roster;
+        const key = date;
+        tempRoster.trips[key] = tempRoster.trips[key].filter(
+          detail => detail.flightNumber !== flightNumber
+        );
+        return tempRoster;
+      })
+      .catch(showError);
   };
 
   render() {

@@ -13,7 +13,7 @@ ROSTER = Blueprint('roster', __name__)
 
 
 @ROSTER.route("/<int:member_id>", methods=['GET'])
-@crossdomain(origin='http://localhost:5000')
+@crossdomain(origin='*')
 def roster_details(member_id):
     """Get the roster details for a particular member
 
@@ -32,14 +32,28 @@ def roster_details(member_id):
     return Response(output, mimetype="application/json")
 
 
-@ROSTER.route("/<int:memberid>", methods=['POST'])
-def add_trip_to_roster(member_id, trip):
+@ROSTER.route("/<int:member_id>", methods=['POST'])
+@crossdomain(origin='*')
+def add_trip_to_roster(member_id):
     """Adds a new trip to the memberss roster
     Decorators:
         ROSTER
     Arguments:
         member_id {[number]} -- Id that uniquely identies this member
-        trip: {[Trip]} -- Details about the trip
     """
-
     print member_id
+
+
+@ROSTER.route("/<int:member_id>", methods=['DELETE', 'OPTIONS'])
+@crossdomain(origin='*', headers={'content-type': 'application/json'})
+def delete_trip_from_roster(member_id):
+    request_data = request.get_json()
+    # request_data = request.form
+    flight_number = request_data.get("flight_number")
+    date = request_data.get("date")
+    if not flight_number or not date:
+        return Response("", status=404)
+    else:
+        _db = DB()
+        _db.delete_trip_from_roster(member_id, date, flight_number)
+        return Response("", status=200)

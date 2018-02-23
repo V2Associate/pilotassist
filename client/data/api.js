@@ -8,10 +8,16 @@ export function status(response: Response): Promise<Response> {
   return Promise.reject(new Error(response.statusText));
 }
 
+export function showError(error: any) {
+  console.log("Request failed", error);
+}
 export function json(response: Response) {
   return response.json();
 }
 
+export function getRosterDeleteURL(memberId: number) {
+  return `${baseUrl}/${memberId}`;
+}
 export function getRosterQueryURL(
   memberId: number,
   startTime: ?number,

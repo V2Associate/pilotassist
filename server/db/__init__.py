@@ -39,7 +39,8 @@ ALL_DB_PARAMS = {
 }
 
 # select aircraft_make, flew_date, actual_departure_time, actual_arrival_time, instrument_hrs, night_hrs, route_name, source, destination, departure_time, arrival_time, name  from trip_details INNER JOIN route ON (trip_details.route_id = route.id) INNER JOIN member on trip_details.member_id = member.id where member_id=1;
-QUERY_GET_ROSTER_FOR_DATE = "select {COL_AIRCRAFT_MAKE}, {COL_FLEW_DATE}, {COL_ACTUAL_DEPARTURE_TIME}, {COL_ACTUAL_ARRIVAL_TIME}, {COL_INSTRUMENT_HRS}, {COL_NIGHT_HRS}, {COL_ROUTE_NAME}, {COL_ROUTE_SOURCE}, {COL_ROUTE_DESTINATION}, {COL_DEPARTURE_TIME}, {COL_ARRIVAL_TIME}, {COL_MEMBER_NAME}  from {TABLE_TRIP_DETAILS} INNER JOIN {TABLE_ROUTE} ON ({TABLE_TRIP_DETAILS}.{COL_ROUTE_ID} = {TABLE_ROUTE}.{COL_ID}) INNER JOIN {TABLE_MEMBER} on {TABLE_TRIP_DETAILS}.{COL_MEMBER_ID} = {TABLE_MEMBER}.{COL_ID} where {COL_MEMBER_ID}={MEMBER_ID} and {COL_ACTUAL_DEPARTURE_TIME} between {DEPARTURE_START_TIME} and {DEPARTURE_END_TIME}"
+QUERY_GET_ROSTER_FOR_DATE = "select {COL_AIRCRAFT_MAKE}, {COL_FLEW_DATE}, {COL_ACTUAL_DEPARTURE_TIME}, {COL_ACTUAL_ARRIVAL_TIME}, {COL_INSTRUMENT_HRS}, {COL_NIGHT_HRS}, {COL_ROUTE_NAME}, {COL_ROUTE_SOURCE}, {COL_ROUTE_DESTINATION}, {COL_DEPARTURE_TIME}, {COL_ARRIVAL_TIME}, {COL_MEMBER_NAME}  from {TABLE_TRIP_DETAILS} INNER JOIN {TABLE_ROUTE} ON ({TABLE_TRIP_DETAILS}.{COL_ROUTE_ID} = {TABLE_ROUTE}.{COL_ID}) INNER JOIN {TABLE_MEMBER} on {TABLE_TRIP_DETAILS}.{COL_MEMBER_ID} = {TABLE_MEMBER}.{COL_ID} where {COL_MEMBER_ID}={MEMBER_ID} and {COL_FLEW_DATE} between {DEPARTURE_START_TIME} and {DEPARTURE_END_TIME}"
+QUERY_DELETE_TRIP_FROM_ROSTER = "delete from {TABLE_TRIP_DETAILS} where {COL_MEMBER_ID}={MEMBER_ID} and {COL_FLEW_DATE}={FLEW_DATE} and {COL_ROUTE_ID} in (select {COL_ID} from {TABLE_ROUTE} where {COL_ROUTE_NAME}='{ROUTE_NAME}')"
 
 SECONDS_IN_A_DAY = 24 * 60 * 60
 
@@ -69,20 +70,16 @@ class DB:
         roster = Roster()
         roster.add_trips(trips)
         return roster
-        # try:
-        #     with connection.cursor() as cursor:
-        #         print "query ", QUERY_GET_ROSTER_FOR_DATE.format(**arguments)
-        #         cursor.execute(QUERY_GET_ROSTER_FOR_DATE.format(**arguments))
-        #         results = cursor.fetchall()
-        #         trips = [self.to_trip(trip) for trip in results]
-        #         print "Trips is", trips
-        #         return trips
-        # finally:
-        #     connection.close()
 
-    # trip = Trip("AI-777", "BLR", 1518840246, "CCU", 1518847450)
-    # roster = Roster([trip])
-    # return
+    def delete_trip_from_roster(self, member_id, date, flight_number):
+        arguments = ALL_DB_PARAMS
+        arguments.update(
+            {"FLEW_DATE": date, "ROUTE_NAME": flight_number, "MEMBER_ID": member_id})
+        print "query", QUERY_DELETE_TRIP_FROM_ROSTER.format(**arguments)
+        rows_delted = connection.execute(
+            QUERY_DELETE_TRIP_FROM_ROSTER.format(**arguments))
+        print "Number of rows deleted ", rows_delted
+        return rows_delted
 
     def get_current_time(self):
         return int(time.time())

@@ -16,6 +16,32 @@ class DBConnection(object):
         self.password = password
 
         self.connection = None
+
+    # TODO check whethr we can change this to cursor
+    def execute(self, query):
+        cursor = None
+        if self.connection is None:
+            self.connection = self.get_connection(
+                server=self.server,
+                database=self.database,
+                username=self.username,
+                password=self.password)
+        try:
+            cursor = self.connection.cursor()
+            rows_affected = cursor.execute(query)
+            self.connection.commit()
+            return rows_affected
+        except:
+            self.connection = self.get_connection(server=self.server,
+                                                  database=self.database,
+                                                  username=self.username,
+                                                  password=self.password)
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+                del cursor
+
     # TODO implement retry
 
     def query_db(self, query):
