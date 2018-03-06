@@ -26,7 +26,9 @@ const styles = {
 type Props = {
   classes: {
     footer: {}
-  }
+  },
+  weeklyHours: string,
+  dailyHours: string
 };
 const AppFooter = (props: Props) => (
   <footer className={props.classes.footer}>
@@ -35,7 +37,7 @@ const AppFooter = (props: Props) => (
         Weekly
       </Typography>
       <Typography variant="body2" color="inherit">
-        2Hrs 20min
+        {props.weeklyHours}
       </Typography>
     </span>
     <span>
@@ -43,7 +45,7 @@ const AppFooter = (props: Props) => (
         Daily
       </Typography>
       <Typography variant="body2" color="inherit">
-        2Hrs 20min
+        {props.dailyHours}
       </Typography>{" "}
     </span>
   </footer>

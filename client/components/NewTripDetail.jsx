@@ -11,9 +11,12 @@ import TextField from "material-ui/TextField";
 import Save from "material-ui-icons/Save";
 import type { Match } from "react-router-dom";
 import { convertToEpoch, formatTime } from "../lib";
+import { getRosterAddURL, status } from "../data/api";
 import type { Trip } from "../../flow-typed/types";
 
 // TODO there should be an API for this
+// This API should also populate the possible SRC and DESTINATIoN
+// That will be help in getting route id when updating or delete
 const flights = ["AI-777", "AI-778", "AI-779", "AI-776", "None"];
 
 const styles = theme => ({
@@ -146,22 +149,42 @@ class NewTripDetails extends React.Component<Props, State> {
   handleSrcTimeChange = event => {
     const { value } = event.currentTarget;
     const [hours, minutes] = value.split(":");
+    const setDate =
+      this.state.tripDetail.departureUnixTime !== 0
+        ? new Date(this.state.tripDetail.departureUnixTime * 1000)
+        : new Date();
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
         departureTime: value,
-        departureUnixTime: convertToEpoch(-1, -1, -1, hours, minutes)
+        departureUnixTime: convertToEpoch(
+          setDate.getFullYear(),
+          setDate.getMonth(),
+          setDate.getDate(),
+          hours,
+          minutes
+        )
       }
     }));
   };
   handleDstTimeChange = event => {
     const { value } = event.currentTarget;
     const [hours, minutes] = value.split(":");
+    const setDate =
+      this.state.tripDetail.arrivalUnixTime !== 0
+        ? new Date(this.state.tripDetail.arrivalUnixTime * 1000)
+        : new Date();
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
         arrivalTime: value,
-        arrivalUnixTime: convertToEpoch(-1, -1, -1, hours, minutes)
+        arrivalUnixTime: convertToEpoch(
+          setDate.getFullYear(),
+          setDate.getMonth(),
+          setDate.getDate(),
+          hours,
+          minutes
+        )
       }
     }));
   };
@@ -174,7 +197,16 @@ class NewTripDetails extends React.Component<Props, State> {
       departure: this.state.tripDetail.departure,
       departureTime: this.state.tripDetail.departureUnixTime
     };
-    this.setState({ goback: true, newTripDetail });
+    fetch(getRosterAddURL(1), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(newTripDetail)
+    })
+      .then(status)
+      .then(() => this.setState({ goback: true, newTripDetail }))
+      .catch(error => console.log(error));
   };
   render() {
     if (this.state.goback === true) {
@@ -219,8 +251,9 @@ class NewTripDetails extends React.Component<Props, State> {
             />
             <TextField
               required
-              label="Started At (24Hrs)"
+              label="Started At"
               id="flight-src-time"
+              type="time"
               className={(classes.textField, classes.margin)}
               margin="normal"
               value={this.state.tripDetail.departureTime}
@@ -239,8 +272,9 @@ class NewTripDetails extends React.Component<Props, State> {
             />
             <TextField
               required
-              label="Landed At (24Hrs)"
+              label="Landed At"
               id="flight-dst-time"
+              type="time"
               className={(classes.textField, classes.margin)}
               margin="normal"
               value={this.state.tripDetail.arrivalTime}

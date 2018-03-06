@@ -32,8 +32,8 @@ def roster_details(member_id):
     return Response(output, mimetype="application/json")
 
 
-@ROSTER.route("/<int:member_id>", methods=['POST'])
-@crossdomain(origin='*')
+@ROSTER.route("/<int:member_id>", methods=['POST', 'OPTIONS'])
+@crossdomain(origin='*',  headers={'content-type': 'application/json'})
 def add_trip_to_roster(member_id):
     """Adds a new trip to the memberss roster
     Decorators:
@@ -41,7 +41,11 @@ def add_trip_to_roster(member_id):
     Arguments:
         member_id {[number]} -- Id that uniquely identies this member
     """
-    print member_id
+    request_data = request.get_json()
+    # TODO do the validation
+    _db = DB()
+    _db.add_trip_to_roster(request_data)
+    return Response("", status=200)
 
 
 @ROSTER.route("/<int:member_id>", methods=['DELETE', 'OPTIONS'])

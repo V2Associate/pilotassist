@@ -1,5 +1,5 @@
 // @flow
-const baseUrl = "http://192.168.1.2:6001/roster";
+const baseUrl = "http://172.23.244.89:6001/roster";
 
 export function status(response: Response): Promise<Response> {
   if (response.status >= 200 && response.status < 300) {
@@ -16,6 +16,10 @@ export function json(response: Response) {
 }
 
 export function getRosterDeleteURL(memberId: number) {
+  return `${baseUrl}/${memberId}`;
+}
+
+export function getRosterAddURL(memberId: number) {
   return `${baseUrl}/${memberId}`;
 }
 export function getRosterQueryURL(

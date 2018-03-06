@@ -21,8 +21,12 @@ import {
 import {
   todayTimeInEpoch,
   getDateFromUnixTimeStamp,
-  mergeRosterUpdate
+  mergeRosterUpdate,
+  formattedTotalTripTime,
+  calculateWeeklyTripTime,
+  SEC_PER_DAY
 } from "../lib";
+
 import type { Trip, RosterType } from "../../flow-typed/types";
 
 const styles = theme => ({
@@ -55,17 +59,18 @@ type State = {
   loading: boolean
 };
 
-const SEC_PER_DAY = 24 * 60 * 60;
-
 class Roster extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     console.log("in constructure");
+    // This is not needed, it's going to query the DB again so just set the today
     if ("location" in this.props && "newTripDetail" in this.props.location) {
       const { newTripDetail } = this.props.location;
       console.log(newTripDetail);
       const date = getDateFromUnixTimeStamp(newTripDetail.departureTime);
-      this.state.roster.trips[date].push(newTripDetail);
+      // this.state.roster.trips[date].push(newTripDetail);
+      console.log(date);
+      this.state.today = date;
     }
   }
   state = {
@@ -78,11 +83,18 @@ class Roster extends React.Component<Props, State> {
   componentDidMount() {
     if (this.state.loading) {
       console.log("In componentDidMount");
-      const url = getRosterQueryURL(1);
+      const url = getRosterQueryURL(
+        1,
+        this.state.today - 7 * SEC_PER_DAY,
+        this.state.today
+      );
       fetch(url)
         .then(status)
         .then(json)
-        .then(data => this.setState({ roster: data }))
+        .then(data => {
+          const roster = mergeRosterUpdate(this.state.roster, data);
+          this.setState({ roster });
+        })
         .catch(error => console.log("Request failed", error));
       // eslint-disable-next-line react/no-did-mount-set-state
       this.setState({ loading: false });
@@ -164,6 +176,8 @@ class Roster extends React.Component<Props, State> {
         // TODO :- Check this. Assuming that delete is taking some long time for some reason
         // User does a edit, he edits and saves before the edit is completed
         // possibly the edited one also will get delete :( )
+        // TODO: before this completes  next page is getting rendered due to this the state change was not possible
+
         const tempRoster = this.state.roster;
         const key = date;
         tempRoster.trips[key] = tempRoster.trips[key].filter(
@@ -173,6 +187,10 @@ class Roster extends React.Component<Props, State> {
       })
       .catch(showError);
   };
+
+  isRosterAvailable = (): boolean =>
+    this.state.today in this.state.roster.trips &&
+    this.state.roster.trips[this.state.today].length;
 
   render() {
     const { classes } = this.props;
@@ -194,8 +212,7 @@ class Roster extends React.Component<Props, State> {
           onPreviousPressed={this.onPreviousPressed}
           onNextPressed={this.onNextPressed}
         />
-        {this.state.today in this.state.roster.trips &&
-        this.state.roster.trips[this.state.today].length > 0 ? (
+        {this.isRosterAvailable() ? (
           this.state.roster.trips[this.state.today]
             .sort((a, b) => a.arrivalTime - b.arrivalTime)
             .map(trip => (
@@ -226,7 +243,21 @@ class Roster extends React.Component<Props, State> {
         >
           <AddIcon />
         </Button>
-        <AppFooter onAddPressed={this.onAddPressed} />
+        <AppFooter
+          onAddPressed={this.onAddPressed}
+          weeklyHours={
+            this.isRosterAvailable()
+              ? calculateWeeklyTripTime(this.state.roster, this.state.today)
+              : ""
+          }
+          dailyHours={
+            this.isRosterAvailable()
+              ? formattedTotalTripTime(
+                  this.state.roster.trips[this.state.today]
+                )
+              : ""
+          }
+        />
       </div>
     );
   }
