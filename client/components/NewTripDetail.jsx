@@ -7,10 +7,11 @@ import { FormControl, FormHelperText } from "material-ui/Form";
 import Button from "material-ui/Button";
 import Select from "material-ui/Select";
 import TextField from "material-ui/TextField";
+import Snackbar from "material-ui/Snackbar";
 // $FlowFixMe
 import Save from "material-ui-icons/Save";
 import type { Match } from "react-router-dom";
-import { convertToEpoch, formatTime } from "../lib";
+import { formatDateTime } from "../lib";
 import { getRosterAddURL, status } from "../data/api";
 import type { Trip } from "../../flow-typed/types";
 
@@ -18,7 +19,9 @@ import type { Trip } from "../../flow-typed/types";
 // This API should also populate the possible SRC and DESTINATIoN
 // That will be help in getting route id when updating or delete
 const flights = ["AI-777", "AI-778", "AI-779", "AI-776", "None"];
-
+const ERROR_ARRIVALTIME_LESS_THAN_DEPARTURETIME =
+  "Arrival time should be after departure time";
+let ERROR_MESSAGE = "";
 const styles = theme => ({
   root: {
     display: "flex",
@@ -42,6 +45,9 @@ const styles = theme => ({
   },
   selectEmpty: {
     marginTop: theme.spacing.unit * 2
+  },
+  errorMessage: {
+    color: "#FF1493"
   }
 });
 
@@ -52,7 +58,8 @@ type Props = {
     selectEmpty: {},
     textField: {},
     margin: {},
-    leftIcon: {}
+    leftIcon: {},
+    errorMessage: {}
   },
   location: Match
 };
@@ -67,6 +74,7 @@ type State = {
     arrivalTime: string
   },
   goback: boolean,
+  showError: boolean,
   newTripDetail: Trip | null
 };
 
@@ -82,6 +90,7 @@ class NewTripDetails extends React.Component<Props, State> {
       arrivalUnixTime: 0
     },
     goback: false,
+    showError: false,
     newTripDetail: null
   };
   componentWillMount() {
@@ -99,10 +108,12 @@ class NewTripDetails extends React.Component<Props, State> {
           ...prevState.tripDetail,
           flightNumber: this.props.location.tripDetail.flightNumber,
           arrival: this.props.location.tripDetail.arrival,
-          arrivalTime: formatTime(this.props.location.tripDetail.arrivalTime),
+          arrivalTime: formatDateTime(
+            this.props.location.tripDetail.arrivalTime
+          ),
           arrivalUnixTime: this.props.location.tripDetail.arrivalTime,
           departure: this.props.location.tripDetail.departure,
-          departureTime: formatTime(
+          departureTime: formatDateTime(
             this.props.location.tripDetail.departureTime
           ),
           departureUnixTime: this.props.location.tripDetail.departureTime
@@ -118,6 +129,30 @@ class NewTripDetails extends React.Component<Props, State> {
     }
   };
 
+  timeValidation = (
+    departureUnixTime: number,
+    arrivalUnixTime: number
+  ): boolean => {
+    if (
+      arrivalUnixTime !== 0 &&
+      departureUnixTime !== 0 &&
+      arrivalUnixTime < departureUnixTime
+    ) {
+      ERROR_MESSAGE = ERROR_ARRIVALTIME_LESS_THAN_DEPARTURETIME;
+      this.setState({ showError: true });
+      return true;
+    }
+    ERROR_MESSAGE = "";
+    this.setState({ showError: false });
+    return false;
+  };
+  handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    this.setState({ showError: false });
+  };
   handleChange = event => {
     const { value } = event.currentTarget;
     this.setState(prevState => ({
@@ -148,48 +183,85 @@ class NewTripDetails extends React.Component<Props, State> {
   };
   handleSrcTimeChange = event => {
     const { value } = event.currentTarget;
-    const [hours, minutes] = value.split(":");
-    const setDate =
-      this.state.tripDetail.departureUnixTime !== 0
-        ? new Date(this.state.tripDetail.departureUnixTime * 1000)
-        : new Date();
+    // const [hours, minutes] = value.split(":");
+    // const setDate =
+    //   this.state.tripDetail.departureUnixTime !== 0
+    //     ? new Date(this.state.tripDetail.departureUnixTime * 1000)
+    //     : new Date();
+    // const departureUnixTime = convertToEpoch(
+    //   setDate.getFullYear(),
+    //   setDate.getMonth(),
+    //   setDate.getDate(),
+    //   hours,
+    //   minutes
+    // );
+    const departureUnixTime = new Date(value).getTime() / 1000;
+    this.timeValidation(
+      departureUnixTime,
+      this.state.tripDetail.arrivalUnixTime
+    );
+    /*
+     TODO if departure time is greater than the arrival time
+     then we should show a message and should not allow it 
+     */
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
         departureTime: value,
-        departureUnixTime: convertToEpoch(
-          setDate.getFullYear(),
-          setDate.getMonth(),
-          setDate.getDate(),
-          hours,
-          minutes
-        )
+        departureUnixTime
       }
     }));
   };
   handleDstTimeChange = event => {
-    const { value } = event.currentTarget;
-    const [hours, minutes] = value.split(":");
-    const setDate =
-      this.state.tripDetail.arrivalUnixTime !== 0
-        ? new Date(this.state.tripDetail.arrivalUnixTime * 1000)
-        : new Date();
+    const { value } = event.currentTarget; // 2018-03-06T16:01
+    // const [date, time] = value.split("T");
+    // const [hours, minutes] = value.split(":");
+    // const setDate =
+    //   this.state.tripDetail.arrivalUnixTime !== 0
+    //     ? new Date(this.state.tripDetail.arrivalUnixTime * 1000)
+    //     : new Date();
+    const arrivalUnixTime = new Date(value).getTime() / 1000;
+    // TODO: Show error if arrivalunixtime is less than departure unix time
+    this.timeValidation(
+      this.state.tripDetail.departureUnixTime,
+      arrivalUnixTime
+    );
+    // let arrivalUnixTime = convertToEpoch(
+    //   setDate.getFullYear(),
+    //   setDate.getMonth(),
+    //   setDate.getDate(),
+    //   hours,
+    //   minutes
+    // );
+    /*
+    * if the choosen hours and minutes is less than what's choosen for 
+    * departure then most probably it should be landed in the next day
+    * ASSUMPTION: There won't be any flight continuous for more than 24 hours 
+    * Needs validation. If this assumption goes wrong then we need to introduce 
+    * a date chooser too
+    */
+    // arrivalUnixTime =
+    //   arrivalUnixTime < this.state.tripDetail.departureUnixTime
+    //     ? arrivalUnixTime + SEC_PER_DAY
+    //     : arrivalUnixTime;
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
         arrivalTime: value,
-        arrivalUnixTime: convertToEpoch(
-          setDate.getFullYear(),
-          setDate.getMonth(),
-          setDate.getDate(),
-          hours,
-          minutes
-        )
+        arrivalUnixTime
       }
     }));
   };
   save = event => {
     console.log(event.currentTarget);
+    if (
+      this.timeValidation(
+        this.state.tripDetail.departureUnixTime,
+        this.state.tripDetail.arrivalUnixTime
+      )
+    ) {
+      return;
+    }
     const newTripDetail = {
       flightNumber: this.state.tripDetail.flightNumber,
       arrival: this.state.tripDetail.arrival,
@@ -253,9 +325,10 @@ class NewTripDetails extends React.Component<Props, State> {
               required
               label="Started At"
               id="flight-src-time"
-              type="time"
+              type="datetime-local"
               className={(classes.textField, classes.margin)}
               margin="normal"
+              fullWidth
               value={this.state.tripDetail.departureTime}
               onChange={this.handleSrcTimeChange}
             />
@@ -274,7 +347,7 @@ class NewTripDetails extends React.Component<Props, State> {
               required
               label="Landed At"
               id="flight-dst-time"
-              type="time"
+              type="datetime-local"
               className={(classes.textField, classes.margin)}
               margin="normal"
               value={this.state.tripDetail.arrivalTime}
@@ -293,6 +366,23 @@ class NewTripDetails extends React.Component<Props, State> {
             </Button>
           </div>
         </FormControl>
+        <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left"
+          }}
+          open={this.state.showError}
+          onClose={this.handleClose}
+          autoHideDuration={6000}
+          SnackbarContentProps={{
+            "aria-describedby": "error-message"
+          }}
+          message={
+            <span className={classes.errorMessage} id="error-message">
+              {ERROR_MESSAGE}
+            </span>
+          }
+        />
       </div>
     );
   }

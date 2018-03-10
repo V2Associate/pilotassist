@@ -1,5 +1,5 @@
 // @flow
-const baseUrl = "http://172.23.244.89:6001/roster";
+const baseUrl = "http://192.168.1.3:6001/roster";
 
 export function status(response: Response): Promise<Response> {
   if (response.status >= 200 && response.status < 300) {

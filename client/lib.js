@@ -29,6 +29,7 @@ const months = [
 export const SEC_PER_DAY = 24 * 60 * 60;
 
 export function formatTime(unixtimestamp: number): string {
+  // Output: 08:00
   const date = new Date(unixtimestamp * 1000);
   const hours = `0${date.getHours()}`;
   const minutes = `0${date.getMinutes()}`;
@@ -37,6 +38,17 @@ export function formatTime(unixtimestamp: number): string {
   return formattedTime;
 }
 
+export function formatDateTime(unixtimestamp: number): string {
+  //  This will result as needed by HTML 5 datetime-local type
+  // example : 2017-05-24T10:30
+  const date = new Date(unixtimestamp * 1000);
+  const hours = `0${date.getHours()}`.substr(-2);
+  const minutes = `0${date.getMinutes()}`.substr(-2);
+  const month = `0${date.getMonth() + 1}`.substr(-2);
+  const dat = `0${date.getDate()}`.substr(-2);
+
+  return `${date.getFullYear()}-${month}-${dat}T${hours}:${minutes}`;
+}
 export function formatDate(unixtimestamp: number): string {
   const date = new Date(unixtimestamp * 1000);
   /* 11-Dec-2016 Thursday */
@@ -144,15 +156,16 @@ export function calculateWeeklyTripTime(
   roster: RosterType,
   _today: number
 ): string {
-  let total = 0;
   let today = _today;
+  let total =
+    today in roster.trips ? calculateTotalTripTime(roster.trips[today]) : 0;
   console.log(new Date(today * 1000));
-  for (let step = 0; step < 7; step += 1) {
-    today -= step * SEC_PER_DAY;
+  for (let step = 1; step < 7; step += 1) {
+    today -= SEC_PER_DAY;
     if (today in roster.trips) {
       total += calculateTotalTripTime(roster.trips[today]);
     }
-    console.log(new Date(today * 1000));
+    console.log(new Date(today * 1000), total);
   }
   const hhmm = convertTimeDifferenceToHoursAndMinutes(total * 1000);
   return `${hhmm.hh}hrs ${hhmm.mm}min`;

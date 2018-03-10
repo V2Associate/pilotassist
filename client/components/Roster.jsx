@@ -100,10 +100,6 @@ class Roster extends React.Component<Props, State> {
       this.setState({ loading: false });
     }
   }
-  componentDidUpdate() {
-    console.log("In componentDidUpdate");
-  }
-
   onNavigation = day => {
     if (day in this.state.roster.trips) {
       this.setState({ today: day });
@@ -147,7 +143,16 @@ class Roster extends React.Component<Props, State> {
   };
   onAddPressed = (event: SyntheticEvent<HTMLDivElement>) => {
     console.log(event.currentTarget);
-    this.setState({ showNewTripDetails: true, tripDetail: null });
+    this.setState({
+      showNewTripDetails: true,
+      tripDetail: {
+        flightNumber: "None",
+        arrival: "",
+        arrivalTime: this.state.today,
+        departure: "",
+        departureTime: this.state.today
+      }
+    });
   };
   onEditPressed = (
     event: SyntheticEvent<HTMLDivElement>,
@@ -244,18 +249,16 @@ class Roster extends React.Component<Props, State> {
           <AddIcon />
         </Button>
         <AppFooter
-          onAddPressed={this.onAddPressed}
-          weeklyHours={
-            this.isRosterAvailable()
-              ? calculateWeeklyTripTime(this.state.roster, this.state.today)
-              : ""
-          }
+          weeklyHours={calculateWeeklyTripTime(
+            this.state.roster,
+            this.state.today
+          )}
           dailyHours={
             this.isRosterAvailable()
               ? formattedTotalTripTime(
                   this.state.roster.trips[this.state.today]
                 )
-              : ""
+              : "--"
           }
         />
       </div>
