@@ -29,6 +29,7 @@ import {
 
 import type { Trip, RosterType } from "../../flow-typed/types";
 
+const MEMBER_ID = 1;
 const styles = theme => ({
   fab: {
     position: "fixed",
@@ -48,7 +49,7 @@ type Props = {
     fab: {},
     noDetails: {}
   },
-  location: Match
+  location: Match & { newTripDetail: Trip }
 };
 type State = {
   roster: RosterType,
@@ -84,7 +85,7 @@ class Roster extends React.Component<Props, State> {
     if (this.state.loading) {
       console.log("In componentDidMount");
       const url = getRosterQueryURL(
-        1,
+        MEMBER_ID,
         this.state.today - 7 * SEC_PER_DAY,
         this.state.today
       );
@@ -106,8 +107,8 @@ class Roster extends React.Component<Props, State> {
     } else {
       const url =
         day < this.state.today
-          ? getRosterQueryURL(1, day, this.state.today)
-          : getRosterQueryURL(1, this.state.today, day);
+          ? getRosterQueryURL(MEMBER_ID, day, this.state.today)
+          : getRosterQueryURL(MEMBER_ID, this.state.today, day);
 
       fetch(url)
         .then(status)
@@ -162,14 +163,12 @@ class Roster extends React.Component<Props, State> {
     console.log(event.currentTarget);
     const roster = this.deleteTrip(date, tripDetail.flightNumber);
     this.setState({ showNewTripDetails: true, tripDetail, roster });
-    // this.context.history.push("/newtripdetail");
-    // withRouter(({ history }) => history.push("/newtripdetail"));
   };
 
   deleteTrip = (date: number, flightNumber: string): Promise<RosterType> => {
     console.log(flightNumber, date);
     // TODO need to get the memeber id
-    return fetch(getRosterDeleteURL(1), {
+    return fetch(getRosterDeleteURL(MEMBER_ID), {
       method: "DELETE",
       headers: {
         "content-type": "application/json"

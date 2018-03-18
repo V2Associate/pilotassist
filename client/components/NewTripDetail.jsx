@@ -12,13 +12,14 @@ import Snackbar from "material-ui/Snackbar";
 import Save from "material-ui-icons/Save";
 import type { Match } from "react-router-dom";
 import { formatDateTime } from "../lib";
-import { getRosterAddURL, status } from "../data/api";
-import type { Trip } from "../../flow-typed/types";
+import { getRosterAddURL, status, getRouteQueryURL, json } from "../data/api";
+import type { Trip, RouteDetailsType } from "../../flow-typed/types";
 
+const MEMBER_ID = 1;
 // TODO there should be an API for this
 // This API should also populate the possible SRC and DESTINATIoN
 // That will be help in getting route id when updating or delete
-const flights = ["AI-777", "AI-778", "AI-779", "AI-776", "None"];
+// const flights = ["AI-777", "AI-778", "AI-779", "AI-776", "None"];
 const ERROR_ARRIVALTIME_LESS_THAN_DEPARTURETIME =
   "Arrival time should be after departure time";
 let ERROR_MESSAGE = "";
@@ -61,7 +62,7 @@ type Props = {
     leftIcon: {},
     errorMessage: {}
   },
-  location: Match
+  location: Match & Trip
 };
 type State = {
   tripDetail: {
@@ -75,7 +76,8 @@ type State = {
   },
   goback: boolean,
   showError: boolean,
-  newTripDetail: Trip | null
+  newTripDetail: Trip | null,
+  routeDetails: RouteDetailsType
 };
 
 class NewTripDetails extends React.Component<Props, State> {
@@ -91,10 +93,24 @@ class NewTripDetails extends React.Component<Props, State> {
     },
     goback: false,
     showError: false,
-    newTripDetail: null
+    newTripDetail: null,
+    routeDetails: {
+      None: [
+        { source: "", detination: "", departure_time: "", arrival_time: "" }
+      ]
+    }
   };
   componentWillMount() {
     this.initializeUI();
+  }
+  componentDidMount() {
+    const url = getRouteQueryURL(MEMBER_ID);
+    fetch(url)
+      .then(status)
+      .then(json)
+      .then(routeDetails => {
+        this.setState({ routeDetails });
+      });
   }
   initializeUI = (): void => {
     if (
@@ -155,13 +171,19 @@ class NewTripDetails extends React.Component<Props, State> {
   };
   handleChange = event => {
     const { value } = event.currentTarget;
+    const curRouteDetail: Array<RouteType> = this.state.routeDetails[value];
+    const { source, destination } = curRouteDetail[0];
+
+    // const departureTime = curRouteDetail[0].departure_time;
+    // const arrivalTime = curRouteDetail[0].arrival_time;
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
+        departure: source,
+        arrival: destination,
         flightNumber: value
       }
     }));
-    // TODO: On change we need to set the src and default time
   };
   handleSrcChange = event => {
     const { value } = event.currentTarget;
@@ -183,18 +205,6 @@ class NewTripDetails extends React.Component<Props, State> {
   };
   handleSrcTimeChange = event => {
     const { value } = event.currentTarget;
-    // const [hours, minutes] = value.split(":");
-    // const setDate =
-    //   this.state.tripDetail.departureUnixTime !== 0
-    //     ? new Date(this.state.tripDetail.departureUnixTime * 1000)
-    //     : new Date();
-    // const departureUnixTime = convertToEpoch(
-    //   setDate.getFullYear(),
-    //   setDate.getMonth(),
-    //   setDate.getDate(),
-    //   hours,
-    //   minutes
-    // );
     const departureUnixTime = new Date(value).getTime() / 1000;
     this.timeValidation(
       departureUnixTime,
@@ -214,36 +224,12 @@ class NewTripDetails extends React.Component<Props, State> {
   };
   handleDstTimeChange = event => {
     const { value } = event.currentTarget; // 2018-03-06T16:01
-    // const [date, time] = value.split("T");
-    // const [hours, minutes] = value.split(":");
-    // const setDate =
-    //   this.state.tripDetail.arrivalUnixTime !== 0
-    //     ? new Date(this.state.tripDetail.arrivalUnixTime * 1000)
-    //     : new Date();
     const arrivalUnixTime = new Date(value).getTime() / 1000;
     // TODO: Show error if arrivalunixtime is less than departure unix time
     this.timeValidation(
       this.state.tripDetail.departureUnixTime,
       arrivalUnixTime
     );
-    // let arrivalUnixTime = convertToEpoch(
-    //   setDate.getFullYear(),
-    //   setDate.getMonth(),
-    //   setDate.getDate(),
-    //   hours,
-    //   minutes
-    // );
-    /*
-    * if the choosen hours and minutes is less than what's choosen for 
-    * departure then most probably it should be landed in the next day
-    * ASSUMPTION: There won't be any flight continuous for more than 24 hours 
-    * Needs validation. If this assumption goes wrong then we need to introduce 
-    * a date chooser too
-    */
-    // arrivalUnixTime =
-    //   arrivalUnixTime < this.state.tripDetail.departureUnixTime
-    //     ? arrivalUnixTime + SEC_PER_DAY
-    //     : arrivalUnixTime;
     this.setState(prevState => ({
       tripDetail: {
         ...prevState.tripDetail,
@@ -304,11 +290,13 @@ class NewTripDetails extends React.Component<Props, State> {
               id: "flights"
             }}
           >
-            {flights.sort().map(name => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
+            {Object.keys(this.state.routeDetails)
+              .sort()
+              .map(name => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
           </Select>
           <FormHelperText>Choose flight</FormHelperText>
           <div className={classes.root}>

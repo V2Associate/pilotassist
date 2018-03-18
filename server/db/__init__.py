@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import pymysql
 import time
+import itertools
+from collections import defaultdict
 from server.common import Roster, Trip
 from server.db.db_connection import DBConnection
 from server.common import get_date_as_timestamp
@@ -21,6 +23,8 @@ connection = DBConnection(
 ALL_DB_PARAMS = {
     "TABLE_ROUTE": "route",
     "TABLE_MEMBER": "member",
+    "TABLE_COMPANY": "company",
+    "COL_COMPANY_ID": "company_id",
     "TABLE_TRIP_DETAILS": "trip_details",
     "COL_ROUTE_NAME": "route_name",
     "COL_ROUTE_SOURCE": "source",
@@ -37,12 +41,16 @@ ALL_DB_PARAMS = {
     "COL_ROUTE_ID": "route_id",
     "COL_MEMBER_NAME": "name",
     "COL_ID": "id",
+
+
 }
 
 # select aircraft_make, flew_date, actual_departure_time, actual_arrival_time, instrument_hrs, night_hrs, route_name, source, destination, departure_time, arrival_time, name  from trip_details INNER JOIN route ON (trip_details.route_id = route.id) INNER JOIN member on trip_details.member_id = member.id where member_id=1;
 QUERY_GET_ROSTER_FOR_DATE = "select {COL_AIRCRAFT_MAKE}, {COL_FLEW_DATE}, {COL_ACTUAL_DEPARTURE_TIME}, {COL_ACTUAL_ARRIVAL_TIME}, {COL_INSTRUMENT_HRS}, {COL_NIGHT_HRS}, {COL_ROUTE_NAME}, {COL_ROUTE_SOURCE}, {COL_ROUTE_DESTINATION}, {COL_DEPARTURE_TIME}, {COL_ARRIVAL_TIME}, {COL_MEMBER_NAME}  from {TABLE_TRIP_DETAILS} INNER JOIN {TABLE_ROUTE} ON ({TABLE_TRIP_DETAILS}.{COL_ROUTE_ID} = {TABLE_ROUTE}.{COL_ID}) INNER JOIN {TABLE_MEMBER} on {TABLE_TRIP_DETAILS}.{COL_MEMBER_ID} = {TABLE_MEMBER}.{COL_ID} where {COL_MEMBER_ID}={MEMBER_ID} and {COL_FLEW_DATE} between {DEPARTURE_START_TIME} and {DEPARTURE_END_TIME}"
 QUERY_DELETE_TRIP_FROM_ROSTER = "delete from {TABLE_TRIP_DETAILS} where {COL_MEMBER_ID}={MEMBER_ID} and {COL_FLEW_DATE}={FLEW_DATE} and {COL_ROUTE_ID} in (select {COL_ID} from {TABLE_ROUTE} where {COL_ROUTE_NAME}='{ROUTE_NAME}')"
 QUERY_ADD_TRIP_TO_ROSTER = "insert into {TABLE_TRIP_DETAILS}({COL_FLEW_DATE}, {COL_AIRCRAFT_MAKE}, {COL_ACTUAL_DEPARTURE_TIME}, {COL_ACTUAL_ARRIVAL_TIME}, {COL_MEMBER_ID}, {COL_ROUTE_ID}) SELECT {FLEW_DATE}, '{AIRCRAFT_MAKE}', {ACTUAL_DEPARTURE_TIME}, {ACTUAL_ARRIVAL_TIME}, {MEMBER_ID}, {COL_ID} from {TABLE_ROUTE} where {COL_ROUTE_NAME}='{ROUTE_NAME}';"
+QUERY_GET_ALL_ROUTE = "select {COL_ROUTE_NAME}, {COL_ROUTE_SOURCE}, {COL_ROUTE_DESTINATION}, {COL_DEPARTURE_TIME}, {COL_ARRIVAL_TIME} from {TABLE_ROUTE} where {COL_COMPANY_ID} in (select {COL_COMPANY_ID} from {TABLE_MEMBER} where {COL_ID}={MEMBER_ID}) "
+
 SECONDS_IN_A_DAY = 24 * 60 * 60
 
 
@@ -107,10 +115,28 @@ class DB:
                     arrival_time=trip[ALL_DB_PARAMS["COL_ARRIVAL_TIME"]])
 
 
-# db = DB()
-# db.get_roster_details()
+class RouteDB:
+
+    def get_routes(self, member_id):
+        arguments = ALL_DB_PARAMS
+        arguments.update({"MEMBER_ID": member_id})
+        print QUERY_GET_ALL_ROUTE.format(**arguments)
+        db_results = connection.query_db(
+            QUERY_GET_ALL_ROUTE.format(**arguments))
+        # db_results = sorted(db_results, key=lambda x: x[self.COL_ROUTE_NAME])
+        # for route_name, routes in itertools.groupby(db_results, lambda x: x[self.COL_ROUTE_NAME]):
+        #     print route_name, list(routes)
+        result = defaultdict(list)
+        for db_result in db_results:
+            result[db_result[ALL_DB_PARAMS["COL_ROUTE_NAME"]]].append({
+                ALL_DB_PARAMS["COL_ROUTE_SOURCE"]: db_result[ALL_DB_PARAMS["COL_ROUTE_SOURCE"]],
+                ALL_DB_PARAMS["COL_ROUTE_DESTINATION"]: db_result[ALL_DB_PARAMS["COL_ROUTE_DESTINATION"]],
+                ALL_DB_PARAMS["COL_DEPARTURE_TIME"]: db_result[ALL_DB_PARAMS["COL_DEPARTURE_TIME"]],
+                ALL_DB_PARAMS["COL_ARRIVAL_TIME"]: db_result[ALL_DB_PARAMS["COL_ARRIVAL_TIME"]],
+            })
+        return result
 
 
-# update  trip_details set actual_departure_time=1519056000,actual_arrival_time=1519056000 where actual_departure_time=1600 and actual_arrival_time=1700
-# select aircraft_make, flew_date, actual_departure_time, actual_arrival_time, instrument_hrs, night_hrs, route_name, source, destination, departure_time, arrival_time, name  from trip_details INNER JOIN route ON (trip_details.route_id = route.id) INNER JOIN member on trip_details.member_id = member.id where member_id=1;
-# select aircraft_make, flew_date, actual_departure_time, actual_arrival_time, instrument_hrs, night_hrs, route_name, source, destination, departure_time, arrival_time, name from trip_details INNER JOIN route ON(trip_details.route_id=route.id) INNER JOIN member on trip_details.member_id = member.id where member_id = 1 and actual_departure_time between 1518998400 and 1519084740
+if __name__ == "__main__":
+    db = RouteDB()
+    db.get_routes(2)

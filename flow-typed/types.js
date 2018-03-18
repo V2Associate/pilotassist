@@ -14,3 +14,12 @@ export type RosterType = {
     [date: string]: Array<Trip>
   }
 };
+export type RouteType = {
+  source: string,
+  destination: string,
+  departure_time: string,
+  arrival_time: string
+};
+export type RouteDetailsType = {
+  string: Array<RouteType>
+};

@@ -1,5 +1,7 @@
 // @flow
-const baseUrl = "http://192.168.1.3:6001/roster";
+const baseUrl = "http://192.168.1.3:6001";
+const rosterBaseUrl = `${baseUrl}/roster`;
+const routeBaseUrl = `${baseUrl}/route`;
 
 export function status(response: Response): Promise<Response> {
   if (response.status >= 200 && response.status < 300) {
@@ -16,18 +18,18 @@ export function json(response: Response) {
 }
 
 export function getRosterDeleteURL(memberId: number) {
-  return `${baseUrl}/${memberId}`;
+  return `${rosterBaseUrl}/${memberId}`;
 }
 
 export function getRosterAddURL(memberId: number) {
-  return `${baseUrl}/${memberId}`;
+  return `${rosterBaseUrl}/${memberId}`;
 }
 export function getRosterQueryURL(
   memberId: number,
   startTime: ?number,
   endTime: ?number
 ) {
-  let url = `${baseUrl}/${memberId}`;
+  let url = `${rosterBaseUrl}/${memberId}`;
   if (startTime) {
     url = `${url}?start_time=${startTime}`;
   }
@@ -55,4 +57,7 @@ export function getRoster(
     .catch(error => console.log("Request failed", error));
 }
 
+export function getRouteQueryURL(memberId: number): string {
+  return `${routeBaseUrl}/${memberId}`;
+}
 export function saveTrip() {}
