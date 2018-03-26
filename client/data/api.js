@@ -1,5 +1,5 @@
 // @flow
-const baseUrl = "http://192.168.1.3:6001";
+const baseUrl = "http://172.23.244.197:6001";
 const rosterBaseUrl = `${baseUrl}/roster`;
 const routeBaseUrl = `${baseUrl}/route`;
 

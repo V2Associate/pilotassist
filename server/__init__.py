@@ -13,5 +13,5 @@ pa_app.register_blueprint(ROSTER, url_prefix='/roster')
 pa_app.register_blueprint(ROUTE, url_prefix="/route")
 
 if __name__ == "__main__":
-    pa_app.run(host="192.168.1.3", port=6001)
+    pa_app.run(host="172.23.244.197", port=6001)
 #run_simple('localhost', 6000, pa_app, use_reloader=False)

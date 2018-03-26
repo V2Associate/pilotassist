@@ -17,8 +17,8 @@ export type RosterType = {
 export type RouteType = {
   source: string,
   destination: string,
-  departure_time: string,
-  arrival_time: string
+  departure_time: number,
+  arrival_time: number
 };
 export type RouteDetailsType = {
   string: Array<RouteType>

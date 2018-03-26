@@ -5,13 +5,21 @@ import { withStyles } from "material-ui/styles";
 import { Redirect } from "react-router-dom";
 import { FormControl, FormHelperText } from "material-ui/Form";
 import Button from "material-ui/Button";
-import Select from "material-ui/Select";
+// import Select from "material-ui/Select";
+import Autosuggest from "react-autosuggest";
 import TextField from "material-ui/TextField";
 import Snackbar from "material-ui/Snackbar";
+import Paper from "material-ui/Paper";
+import match from "autosuggest-highlight/match";
+import parse from "autosuggest-highlight/parse";
+import { MenuItem } from "material-ui/Menu";
 // $FlowFixMe
 import Save from "material-ui-icons/Save";
 import type { Match } from "react-router-dom";
-import { formatDateTime } from "../lib";
+import {
+  formatDateTime,
+  formatUnixTimeStampToTodayDateAndUnixTimeStampTime
+} from "../lib";
 import { getRosterAddURL, status, getRouteQueryURL, json } from "../data/api";
 import type { Trip, RouteDetailsType } from "../../flow-typed/types";
 
@@ -49,6 +57,27 @@ const styles = theme => ({
   },
   errorMessage: {
     color: "#FF1493"
+  },
+  // for autoselect
+  container: {
+    flexGrow: 1,
+    position: "relative",
+    width: 200
+  },
+  suggestionsContainerOpen: {
+    position: "absolute",
+    zIndex: 1,
+    marginTop: theme.spacing.unit,
+    left: 0,
+    right: 0
+  },
+  suggestion: {
+    display: "block"
+  },
+  suggestionsList: {
+    margin: 0,
+    padding: 0,
+    listStyleType: "none"
   }
 });
 
@@ -60,7 +89,11 @@ type Props = {
     textField: {},
     margin: {},
     leftIcon: {},
-    errorMessage: {}
+    errorMessage: {},
+    container: {},
+    suggestionsContainerOpen: {},
+    suggestion: {},
+    suggestionsList: {}
   },
   location: Match & Trip
 };
@@ -77,8 +110,79 @@ type State = {
   goback: boolean,
   showError: boolean,
   newTripDetail: Trip | null,
-  routeDetails: RouteDetailsType
+  routeDetails: RouteDetailsType,
+  flightNumbers: Array<String>
 };
+
+function renderInput(inputProps) {
+  const { classes, ref, ...other } = inputProps;
+  return (
+    <TextField
+      fullWidth
+      inputRef={ref}
+      InputProps={{
+        classes: {
+          input: classes.input
+        },
+        ...other
+      }}
+    />
+  );
+}
+
+function renderSuggestionsContainer(options) {
+  const { containerProps, children } = options;
+
+  return (
+    <Paper {...containerProps} square>
+      {children}
+    </Paper>
+  );
+}
+
+function renderSuggestion(suggestion, { query, isHighlighted }) {
+  const matches = match(suggestion, query);
+  const parts = parse(suggestion, matches);
+
+  return (
+    <MenuItem selected={isHighlighted} component="div">
+      <div>
+        {parts.map(
+          (part, index) =>
+            part.highlight ? (
+              <span key={String(index)} style={{ fontWeight: 300 }}>
+                {part.text}
+              </span>
+            ) : (
+              <strong key={String(index)} style={{ fontWeight: 500 }}>
+                {part.text}
+              </strong>
+            )
+        )}
+      </div>
+    </MenuItem>
+  );
+}
+
+function getSuggestions(value, applicationValues: Array<String>) {
+  const inputValue = value.trim().toLowerCase();
+  const inputLength = inputValue.length;
+  let count = 0;
+
+  return inputLength === 0
+    ? []
+    : applicationValues.filter(suggestion => {
+        const keep =
+          count < 5 && suggestion.toLowerCase().indexOf(inputValue) !== -1;
+        // suggestion.toLowerCase().slice(0, inputLength) === inputValue;
+
+        if (keep) {
+          count += 1;
+        }
+
+        return keep;
+      });
+}
 
 class NewTripDetails extends React.Component<Props, State> {
   state = {
@@ -94,14 +198,12 @@ class NewTripDetails extends React.Component<Props, State> {
     goback: false,
     showError: false,
     newTripDetail: null,
-    routeDetails: {
-      None: [
-        { source: "", detination: "", departure_time: "", arrival_time: "" }
-      ]
-    }
+    routeDetails: {},
+    flightNumbers: []
   };
   componentWillMount() {
     this.initializeUI();
+    this.setState({ flightNumbers: this.getflightNumbers() });
   }
   componentDidMount() {
     const url = getRouteQueryURL(MEMBER_ID);
@@ -110,8 +212,25 @@ class NewTripDetails extends React.Component<Props, State> {
       .then(json)
       .then(routeDetails => {
         this.setState({ routeDetails });
+        this.setState({ flightNumbers: this.getflightNumbers() });
       });
   }
+  // onSuggestionSelected = (
+  //   event,
+  //   { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
+  // ) => {};
+  getflightNumbers = (): Array<String> =>
+    Object.keys(this.state.routeDetails).sort();
+
+  handleSuggestionsFetchRequested = (
+    { value },
+    inputValues: Array<String>,
+    setStateFunc: Function
+  ) => {
+    const filteredValue = getSuggestions(value, inputValues);
+    setStateFunc(filteredValue);
+  };
+
   initializeUI = (): void => {
     if (
       "location" in this.props &&
@@ -138,8 +257,8 @@ class NewTripDetails extends React.Component<Props, State> {
     } else {
       this.setState(prevState => ({
         tripDetail: {
-          ...prevState.tripDetail,
-          flightNumber: "None"
+          ...prevState.tripDetail
+          // flightNumber: "None"
         }
       }));
     }
@@ -169,22 +288,45 @@ class NewTripDetails extends React.Component<Props, State> {
 
     this.setState({ showError: false });
   };
-  handleChange = event => {
-    const { value } = event.currentTarget;
-    const curRouteDetail: Array<RouteType> = this.state.routeDetails[value];
-    const { source, destination } = curRouteDetail[0];
+  handleChange = (event, { newValue }) => {
+    // const { value } = event.currentTarget;
+    const curRouteDetail: Array<RouteType> = this.state.routeDetails[newValue];
+    if (curRouteDetail && curRouteDetail.length > 0) {
+      // TODO: Always taking 0 the element, need to make this also auto suggest and add all
+      const { source, destination } = curRouteDetail[0];
 
-    // const departureTime = curRouteDetail[0].departure_time;
-    // const arrivalTime = curRouteDetail[0].arrival_time;
-    this.setState(prevState => ({
-      tripDetail: {
-        ...prevState.tripDetail,
-        departure: source,
-        arrival: destination,
-        flightNumber: value
-      }
-    }));
+      const departureDetails = formatUnixTimeStampToTodayDateAndUnixTimeStampTime(
+        curRouteDetail[0].departure_time,
+        this.state.tripDetail.departureUnixTime
+      );
+      const arrivalDetails = formatUnixTimeStampToTodayDateAndUnixTimeStampTime(
+        curRouteDetail[0].arrival_time,
+        this.state.tripDetail.arrivalUnixTime
+      );
+      this.setState(prevState => ({
+        tripDetail: {
+          ...prevState.tripDetail,
+          departure: source,
+          arrival: destination,
+          departureTime: departureDetails.formattedDateTime,
+          arrivalTime: arrivalDetails.formattedDateTime,
+          arrivalUnixTime: arrivalDetails.unixtimestamp,
+          departureUnixTime: departureDetails.unixtimestamp,
+          flightNumber: newValue
+        }
+      }));
+    } else {
+      this.setState(prevState => ({
+        tripDetail: {
+          ...prevState.tripDetail,
+          departure: "",
+          arrival: "",
+          flightNumber: newValue
+        }
+      }));
+    }
   };
+
   handleSrcChange = event => {
     const { value } = event.currentTarget;
     this.setState(prevState => ({
@@ -238,6 +380,9 @@ class NewTripDetails extends React.Component<Props, State> {
       }
     }));
   };
+  /*
+  * TODO: if error in the post call stay in the page
+  */
   save = event => {
     console.log(event.currentTarget);
     if (
@@ -266,6 +411,7 @@ class NewTripDetails extends React.Component<Props, State> {
       .then(() => this.setState({ goback: true, newTripDetail }))
       .catch(error => console.log(error));
   };
+
   render() {
     if (this.state.goback === true) {
       return (
@@ -281,23 +427,39 @@ class NewTripDetails extends React.Component<Props, State> {
     return (
       <div>
         <FormControl className={classes.formControl}>
-          <Select
-            native
-            value={this.state.tripDetail.flightNumber}
-            onChange={this.handleChange}
-            className={classes.selectEmpty}
-            inputProps={{
-              id: "flights"
+          <Autosuggest
+            theme={{
+              container: classes.container,
+              suggestionsContainerOpen: classes.suggestionsContainerOpen,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestion
             }}
-          >
-            {Object.keys(this.state.routeDetails)
-              .sort()
-              .map(name => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-          </Select>
+            renderInputComponent={renderInput}
+            suggestions={this.state.flightNumbers}
+            highlightFirstSuggestion
+            onSuggestionsFetchRequested={value =>
+              this.handleSuggestionsFetchRequested(
+                value,
+                Object.keys(this.state.routeDetails).sort(),
+                filteredValue =>
+                  this.setState({
+                    flightNumbers: filteredValue
+                  })
+              )
+            }
+            onSuggestionsClearRequested={() =>
+              this.setState({ flightNumbers: [] })
+            }
+            renderSuggestionsContainer={renderSuggestionsContainer}
+            getSuggestionValue={value => value}
+            renderSuggestion={renderSuggestion}
+            inputProps={{
+              classes,
+              placeholder: "Search a Flight",
+              value: this.state.tripDetail.flightNumber,
+              onChange: this.handleChange
+            }}
+          />
           <FormHelperText>Choose flight</FormHelperText>
           <div className={classes.root}>
             <TextField

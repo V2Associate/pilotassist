@@ -147,7 +147,7 @@ class Roster extends React.Component<Props, State> {
     this.setState({
       showNewTripDetails: true,
       tripDetail: {
-        flightNumber: "None",
+        flightNumber: "",
         arrival: "",
         arrivalTime: this.state.today,
         departure: "",

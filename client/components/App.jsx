@@ -1,7 +1,7 @@
 // @flow
 import React from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
-import Reboot from "material-ui/Reboot";
+import CssBaseline from "material-ui/CssBaseline";
 import AppHeader from "./AppHeader";
 import Roster from "./Roster";
 import LeaveSummary from "./LeaveSummary";
@@ -10,7 +10,7 @@ import NewTripDetail from "./NewTripDetail";
 const App = () => (
   <BrowserRouter>
     <div>
-      <Reboot />
+      <CssBaseline />
       <AppHeader />
       <Switch>
         <Route path="/roster" component={Roster} />

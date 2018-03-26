@@ -49,6 +49,53 @@ export function formatDateTime(unixtimestamp: number): string {
 
   return `${date.getFullYear()}-${month}-${dat}T${hours}:${minutes}`;
 }
+
+export function convertToEpoch(
+  year: number,
+  month: number,
+  date: number,
+  hours: number,
+  minutes: number
+): number {
+  const today = new Date();
+  return (
+    new Date(
+      year < 0 ? today.getFullYear() : year,
+      month < 0 ? today.getMonth() : month,
+      date < 0 ? today.getDate() : date,
+      hours < 0 ? today.getHours() : hours,
+      minutes < 0 ? today.getMinutes() : minutes
+    ).getTime() / 1000
+  );
+}
+
+/*
+Route function returns a unixtimestamp, but the date in it 
+is some random we are worried only about the tiem in it
+So taking today's date and time from the passed in 
+unixtimestamp
+*/
+export function formatUnixTimeStampToTodayDateAndUnixTimeStampTime(
+  unixtimestampForTime: number,
+  unixtimestampForDate: number
+) {
+  const time = formatTime(unixtimestampForTime);
+  const date = unixtimestampForDate
+    ? new Date(unixtimestampForDate * 1000)
+    : new Date();
+  const month = `0${date.getMonth() + 1}`.substr(-2);
+  const dat = `0${date.getDate()}`.substr(-2);
+  return {
+    unixtimestamp: convertToEpoch(
+      -1,
+      -1,
+      -1,
+      parseInt(time.split(":")[0], 10),
+      parseInt(time.split(":")[1], 10)
+    ),
+    formattedDateTime: `${date.getFullYear()}-${month}-${dat}T${time}`
+  };
+}
 export function formatDate(unixtimestamp: number): string {
   const date = new Date(unixtimestamp * 1000);
   /* 11-Dec-2016 Thursday */
@@ -95,25 +142,6 @@ export function dateInEpoch(date: Date): number {
 
 export function todayTimeInEpoch(): number {
   return dateInEpoch(new Date());
-}
-
-export function convertToEpoch(
-  year: number,
-  month: number,
-  date: number,
-  hours: number,
-  minutes: number
-): number {
-  const today = new Date();
-  return (
-    new Date(
-      year < 0 ? today.getFullYear() : year,
-      month < 0 ? today.getMonth() : month,
-      date < 0 ? today.getDate() : date,
-      hours < 0 ? today.getHours() : hours,
-      minutes < 0 ? today.getMinutes() : minutes
-    ).getTime() / 1000
-  );
 }
 
 export function getDateFromUnixTimeStamp(unixtimestamp: number) {
